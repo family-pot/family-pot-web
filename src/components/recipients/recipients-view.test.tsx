@@ -118,23 +118,19 @@ describe("RecipientsView create", () => {
 describe("RecipientsView edit", () => {
   it("edits a recipient in place", async () => {
     await renderView();
-    fireEvent.click(
-      screen.getByRole("button", { name: "Edit Luis Hernández" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Edit Priya Sharma" }));
     fireEvent.change(screen.getByLabelText("Name"), {
       target: { value: "Luis H." },
     });
     fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
 
     expect(await screen.findByText("Luis H.")).toBeDefined();
-    expect(screen.queryByText("Luis Hernández")).toBeNull();
+    expect(screen.queryByText("Priya Sharma")).toBeNull();
   });
 
   it("shows validation errors when editing", async () => {
     await renderView();
-    fireEvent.click(
-      screen.getByRole("button", { name: "Edit Luis Hernández" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Edit Priya Sharma" }));
     fireEvent.change(screen.getByLabelText("Name"), { target: { value: "" } });
     fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
     expect(screen.getByText(/Name is required/)).toBeDefined();
@@ -145,12 +141,12 @@ describe("RecipientsView delete", () => {
   it("asks for confirmation and can be cancelled", async () => {
     await renderView();
     fireEvent.click(
-      screen.getByRole("button", { name: "Delete Luis Hernández" }),
+      screen.getByRole("button", { name: "Delete Priya Sharma" }),
     );
-    expect(screen.getByText("Delete Luis Hernández?")).toBeDefined();
+    expect(screen.getByText("Delete Priya Sharma?")).toBeDefined();
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
-    expect(screen.getByText("Luis Hernández")).toBeDefined();
-    expect(screen.queryByText("Delete Luis Hernández?")).toBeNull();
+    expect(screen.getByText("Priya Sharma")).toBeDefined();
+    expect(screen.queryByText("Delete Priya Sharma?")).toBeNull();
   });
 
   it("deletes a recipient after confirmation", async () => {

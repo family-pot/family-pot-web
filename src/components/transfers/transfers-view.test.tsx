@@ -43,10 +43,10 @@ describe("TransfersView: states", () => {
     await screen.findByRole("list", { name: "Transfers" });
     expect(rows()).toHaveLength(PAGE_SIZE);
 
-    // The newest sample transfer: 2026-07-12, Luis, 200.00 USD, fee 3.50, Western Union, completed.
+    // The newest sample transfer: 2026-07-12, Priya, 200.00 USD, fee 3.50, Western Union, completed.
     const first = rows()[0]!;
     expect(first.textContent).toContain("2026-07-12");
-    expect(first.textContent).toContain("Luis Hernández");
+    expect(first.textContent).toContain("Priya Sharma");
     expect(first.textContent).toContain("$200.00");
     expect(first.textContent).toContain("$3.50");
     expect(first.textContent).toContain("Western Union");
@@ -193,11 +193,7 @@ describe("TransfersView: filters and the URL", () => {
     const options = within(screen.getByLabelText("Recipient"))
       .getAllByRole("option")
       .map((o) => o.textContent);
-    expect(options).toEqual([
-      "All recipients",
-      "Amara Okafor",
-      "Luis Hernández",
-    ]);
+    expect(options).toEqual(["All recipients", "Amara Okafor", "Priya Sharma"]);
   });
 });
 

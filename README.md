@@ -95,6 +95,14 @@ and the data sources; the mock rejects deleting a recipient that still has trans
 
 Invalid or unknown values in the URL are ignored rather than breaking the page. Pagination is cursor-based (`First page` / `Next page`; use the browser's back button to go to an earlier page), matching the API (family-pot-api API-12), so a page never repeats or skips a transfer when data changes. The mapping between the URL and the filters is in `src/lib/transfer-url.ts`.
 
+### Adding and editing a transfer
+
+`/transfers/new` and `/transfers/<id>/edit` use `TransferForm` (`src/components/transfers/transfer-form.tsx`): recipient, date, amount, sending and receiving currency, exchange rate, fee (in the sending currency), provider, purpose, status and notes. Edit mode also has **Delete transfer**, which asks for confirmation first.
+
+What a person types is text. On submit it is converted **with string maths only, never a JavaScript float** (`src/lib/decimal-input.ts`): `"100.10"` becomes `"10010"` minor units, so it is stored and shown as exactly 100.10 (floats would turn `1.15 * 100` into `114.99999999999999`). The conversion follows the currency's decimal places and rejects extra decimals (`1.005` GBP is an error, not a silent rounding). The exchange rate is kept as a canonical decimal string (`"1950.50"` is stored as `"1950.5"`). A blank fee means no fee.
+
+Validation happens in the browser and again in the data layer, from one shared module (`src/data/transfer-validation.ts`): a positive amount, a non-negative fee, supported currencies (GBP, USD, EUR, CAD, NGN, GHS, KES, INR, PHP), a positive rate with at most 12 decimals, a real date from 2000-01-01 to at most 1 day after today, and length limits. Each problem is shown next to its field, and errors returned by the data layer are shown the same way. The form says plainly that everything entered is _user-entered_.
+
 ### Data layer changes for transfers
 
 `transfers.list(query)` now takes the filters (`recipientId`, `dateFrom`, `dateTo`, `provider`, `status`, `limit`, `cursor`) and returns `{ items, limit, hasMore, nextCursor }`. `Transfer` now has `transferDate`, `receivingCurrency`, `provider` (and optional `purpose`, `notes`), and **amounts and fees are minor-unit strings** as in ADR 0004 (`"25000"` with GBP is 250.00), not decimal major units. The mock and the sample data follow this; the API stub still throws "not connected".
