@@ -102,8 +102,8 @@ describe("queryTransfers: filters", () => {
     expectedOrder.filter((id) => filter(all.find((t) => t.id === id)!));
 
   it("filters by recipient, provider (case-insensitive), status and date range (inclusive)", () => {
-    expect(ids({ recipientId: "sample-recipient-luis" })).toEqual(
-      expectIds((t) => t.recipientId === "sample-recipient-luis"),
+    expect(ids({ recipientId: "sample-recipient-priya" })).toEqual(
+      expectIds((t) => t.recipientId === "sample-recipient-priya"),
     );
     expect(ids({ provider: "WISE" })).toEqual(
       expectIds((t) => t.provider === "Wise"),

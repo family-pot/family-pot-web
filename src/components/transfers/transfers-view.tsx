@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { EmptyState, ErrorState, LoadingState } from "@/src/components/states";
@@ -138,7 +139,15 @@ export function TransfersView({ dataSource }: Props) {
 
   return (
     <section className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6">
-      <h1 className="text-2xl font-semibold tracking-tight">Transfers</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-semibold tracking-tight">Transfers</h1>
+        <Link
+          href="/transfers/new"
+          className="rounded-md border border-zinc-400 px-3 py-1.5 text-sm font-medium hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:border-zinc-500 dark:hover:bg-zinc-800"
+        >
+          Add transfer
+        </Link>
+      </div>
 
       <div className="mt-6">
         {/* Keyed by the URL so the inputs always show what the URL says, and by
@@ -268,8 +277,15 @@ function TransferRow({
         <span className="font-medium md:sr-only">Provider: </span>
         {transfer.provider}
       </p>
-      <div className="mt-2 md:mt-0">
+      <div className="mt-2 flex items-center gap-3 md:mt-0">
         <StatusBadge status={transfer.status} />
+        <Link
+          href={`/transfers/${transfer.id}/edit`}
+          aria-label={`Edit transfer on ${transfer.transferDate} to ${recipientName}`}
+          className="text-sm font-medium underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+        >
+          Edit
+        </Link>
       </div>
     </li>
   );

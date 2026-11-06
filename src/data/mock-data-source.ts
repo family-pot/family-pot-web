@@ -6,6 +6,7 @@ import {
 } from "./errors";
 import { validateRecipientInput } from "./recipient-validation";
 import { queryTransfers } from "./transfer-query";
+import { validateTransferInput } from "./transfer-validation";
 import { sampleRecipients, sampleTransfers } from "./sample-data";
 import type {
   CreateRecipientInput,
@@ -169,9 +170,17 @@ export class MockDataSource implements DataSource {
       ) {
         throw new NotFoundError("Recipient", input.recipientId);
       }
+      const fieldErrors = validateTransferInput({
+        ...input,
+        fee: input.fee ?? "0",
+      });
+      if (Object.keys(fieldErrors).length > 0) {
+        throw new ValidationError(fieldErrors);
+      }
       const timestamp = now();
       const transfer: Transfer = {
         ...input,
+        provider: input.provider.trim(),
         id: `transfer-${crypto.randomUUID()}`,
         status: input.status ?? "pending",
         fee: input.fee ?? "0",
@@ -189,11 +198,23 @@ export class MockDataSource implements DataSource {
         throw new NotFoundError("Transfer", id);
       }
       const current = this.transferRecords[index];
+      if (
+        input.recipientId !== undefined &&
+        !this.recipientRecords.some(
+          (recipient) => recipient.id === input.recipientId,
+        )
+      ) {
+        throw new NotFoundError("Recipient", input.recipientId);
+      }
+      const fieldErrors = validateTransferInput({ ...current, ...input });
+      if (Object.keys(fieldErrors).length > 0) {
+        throw new ValidationError(fieldErrors);
+      }
       const updated: Transfer = {
         ...current,
         ...input,
         id: current.id,
-        recipientId: current.recipientId,
+        recipientId: input.recipientId ?? current.recipientId,
         createdAt: current.createdAt,
         updatedAt: now(),
       };
