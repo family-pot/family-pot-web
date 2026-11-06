@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { SiteFooter, SiteHeader } from "@/src/components";
+import { Suspense } from "react";
+import { LoadingState, SiteFooter, SiteHeader } from "@/src/components";
+import { AuthContextProvider } from "@/src/components/auth/auth-context";
+import { RouteGuard } from "@/src/components/auth/route-guard";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -32,10 +35,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         >
           Skip to content
         </a>
-        <SiteHeader />
-        <main id="main-content" className="flex flex-1 flex-col">
-          {children}
-        </main>
+        <AuthContextProvider>
+          <SiteHeader />
+          <main id="main-content" className="flex flex-1 flex-col">
+            {/* useSearchParams (in the guard) needs a Suspense boundary. */}
+            <Suspense fallback={<LoadingState />}>
+              <RouteGuard>{children}</RouteGuard>
+            </Suspense>
+          </main>
+        </AuthContextProvider>
         <SiteFooter />
       </body>
     </html>

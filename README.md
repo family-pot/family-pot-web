@@ -87,6 +87,17 @@ Recipients use ISO 3166-1 alpha-2 country codes (for example `NG`) and have an o
 `notes` field. Validation lives in `src/data/recipient-validation.ts` and is shared by the form
 and the data sources; the mock rejects deleting a recipient that still has transfers.
 
+## Authentication (mock, development only)
+
+Sign-up, login and logout work end to end against a **mock auth provider** so the UI and protected routes are ready before the real API (ADR 0005) is connected. **The mock is for development only.**
+
+- `AuthProvider` (`src/auth/types.ts`) is the only thing the UI talks to: `getSession`, `signUp`, `signIn`, `signOut`. `MockAuthProvider` accepts **any well-formed email and a password of at least 12 characters** (there are no accounts); `ApiAuthProvider` is a stub that fails loudly. They are chosen with the same switch as the data layer, `NEXT_PUBLIC_DATA_SOURCE=mock|api` (default `mock`).
+- The session is held **in memory only**. Nothing is written to `localStorage`, `sessionStorage` or cookies, the password is checked and dropped (never kept in the session or on the provider, never logged), so **reloading the page signs you out**. Tests enforce all of this.
+- Only `/login` and `/signup` are public. Every other page, including `/`, needs a session: while signed out a protected page is **not rendered at all**, and the person is sent to `/login?next=<the page they wanted>`, then brought back after signing in. The `next` value must be a path inside this site (anything else, such as `https://...`, `//host` or a login page, is ignored), so the redirect cannot be abused.
+- The sign-up form requires a password of 12 to 128 characters. Failures show a single generic message ("Could not log in. Check your email and password and try again.") and never say whether an email exists or which part was wrong. Log out is in the header and clears the session.
+
+The real implementation (tokens, refresh, cookies) belongs to the later connect issue.
+
 ## Transfers page
 
 `/transfers` (`src/components/transfers`) lists transfers newest first as cards on phones and rows from the `md` breakpoint: date, recipient, amount, fee, provider and status, each amount with a provenance badge. Filters (recipient, date range, provider, status) and the page position live in the **URL query string**, so reloading a link, sharing it, or using back/forward restores the same view:
