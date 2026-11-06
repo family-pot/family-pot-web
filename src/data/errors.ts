@@ -23,3 +23,19 @@ export class DataSourceNotConnectedError extends Error {
     this.name = "DataSourceNotConnectedError";
   }
 }
+
+/** Field-level problems, keyed by field name, e.g. `{ name: "Name is required." }`. */
+export class ValidationError extends Error {
+  constructor(readonly fieldErrors: Record<string, string>) {
+    super("Some fields are invalid");
+    this.name = "ValidationError";
+  }
+}
+
+/** The record exists but may not be deleted, for example it still has transfers. */
+export class DeletionRejectedError extends Error {
+  constructor(readonly reason: string) {
+    super(reason);
+    this.name = "DeletionRejectedError";
+  }
+}

@@ -24,7 +24,7 @@ describe("MockDataSource", () => {
     const created = await dataSource.recipients.create({
       name: "Test Person",
       relationship: "Friend",
-      country: "Ghana",
+      country: "GH",
       currency: "GHS",
     });
 

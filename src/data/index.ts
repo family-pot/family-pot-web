@@ -41,8 +41,10 @@ export { MockDataSource } from "./mock-data-source";
 export type { MockDataSourceOptions } from "./mock-data-source";
 export {
   DataSourceNotConnectedError,
+  DeletionRejectedError,
   NotFoundError,
   SimulatedDataError,
+  ValidationError,
 } from "./errors";
 export type {
   CreateRecipientInput,
@@ -55,3 +57,5 @@ export type {
   UpdateRecipientInput,
   UpdateTransferInput,
 } from "./types";
+export { COUNTRY_CODES, countryName, isCountryCode } from "./countries";
+export { validateRecipientInput } from "./recipient-validation";

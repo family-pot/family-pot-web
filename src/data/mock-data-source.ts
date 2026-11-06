@@ -1,4 +1,10 @@
-import { NotFoundError, SimulatedDataError } from "./errors";
+import {
+  DeletionRejectedError,
+  NotFoundError,
+  SimulatedDataError,
+  ValidationError,
+} from "./errors";
+import { validateRecipientInput } from "./recipient-validation";
 import { sampleRecipients, sampleTransfers } from "./sample-data";
 import type {
   CreateRecipientInput,
@@ -83,9 +89,14 @@ export class MockDataSource implements DataSource {
 
     create: async (input) => {
       await this.ready();
+      const fieldErrors = validateRecipientInput(input);
+      if (Object.keys(fieldErrors).length > 0) {
+        throw new ValidationError(fieldErrors);
+      }
       const timestamp = now();
       const recipient: Recipient = {
         ...input,
+        name: input.name.trim(),
         id: `recipient-${crypto.randomUUID()}`,
         createdAt: timestamp,
         updatedAt: timestamp,
@@ -101,6 +112,10 @@ export class MockDataSource implements DataSource {
         throw new NotFoundError("Recipient", id);
       }
       const current = this.recipientRecords[index];
+      const fieldErrors = validateRecipientInput({ ...current, ...input });
+      if (Object.keys(fieldErrors).length > 0) {
+        throw new ValidationError(fieldErrors);
+      }
       const updated: Recipient = {
         ...current,
         ...input,
@@ -117,6 +132,14 @@ export class MockDataSource implements DataSource {
       const index = this.recipientRecords.findIndex((item) => item.id === id);
       if (index === -1) {
         throw new NotFoundError("Recipient", id);
+      }
+      const transferCount = this.transferRecords.filter(
+        (item) => item.recipientId === id,
+      ).length;
+      if (transferCount > 0) {
+        throw new DeletionRejectedError(
+          `This recipient has ${transferCount} transfer${transferCount === 1 ? "" : "s"} and cannot be deleted.`,
+        );
       }
       this.recipientRecords.splice(index, 1);
     },

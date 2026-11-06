@@ -63,6 +63,37 @@ Reusable UI lives in `src/components`:
 All controls use native elements, visible focus styles and semantic landmarks. Import
 components from `@/src/components`.
 
+## How data works in this repo
+
+All page and component data goes through `src/data/index.ts`. It exports a single
+`DataSource` with `recipients` and `transfers` repositories, each supporting `list`, `get`,
+`create`, `update` and `delete`. The data source is chosen once from
+`NEXT_PUBLIC_DATA_SOURCE`:
+
+- `mock` (default) — `MockDataSource` keeps an in-memory store seeded from
+  `src/data/sample-data.ts`. The sample records are fake and clearly labelled; amounts,
+  exchange rates and fees are decimal strings. A short artificial delay and an optional
+  failure mode make loading and error states easy to exercise.
+- `api` — `ApiDataSource` is a typed stub that throws "not connected" until the backend is
+  wired up. It never fabricates a successful response.
+
+Pages should import `getDataSource()` (or the shared `dataSource`) and must not import
+sample data directly. Switching implementations later changes this one module, not the UI.
+
+Copy `.env.example` to `.env.local` and set `NEXT_PUBLIC_DATA_SOURCE` or
+`NEXT_PUBLIC_API_URL` when needed.
+
+Recipients use ISO 3166-1 alpha-2 country codes (for example `NG`) and have an optional
+`notes` field. Validation lives in `src/data/recipient-validation.ts` and is shared by the form
+and the data sources; the mock rejects deleting a recipient that still has transfers.
+
+## Recipients page
+
+`/recipients` (`src/components/recipients`) lists recipients with loading, empty and error
+states, and supports add, edit and delete (with confirmation). Field errors, whether from client
+validation or returned by the data layer, appear next to the field. Pass a `dataSource` prop to
+`RecipientsView` in tests.
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) and the shared guidelines in family-pot-docs. Issues are
