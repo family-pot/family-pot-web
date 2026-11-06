@@ -87,12 +87,52 @@ Recipients use ISO 3166-1 alpha-2 country codes (for example `NG`) and have an o
 `notes` field. Validation lives in `src/data/recipient-validation.ts` and is shared by the form
 and the data sources; the mock rejects deleting a recipient that still has transfers.
 
+## Transfers page
+
+`/transfers` (`src/components/transfers`) lists transfers newest first as cards on phones and rows from the `md` breakpoint: date, recipient, amount, fee, provider and status, each amount with a provenance badge. Filters (recipient, date range, provider, status) and the page position live in the **URL query string**, so reloading a link, sharing it, or using back/forward restores the same view:
+
+`/transfers?recipient=<id>&from=2026-01-01&to=2026-06-30&provider=Wise&status=completed&cursor=<opaque>`
+
+Invalid or unknown values in the URL are ignored rather than breaking the page. Pagination is cursor-based (`First page` / `Next page`; use the browser's back button to go to an earlier page), matching the API (family-pot-api API-12), so a page never repeats or skips a transfer when data changes. The mapping between the URL and the filters is in `src/lib/transfer-url.ts`.
+
+### Data layer changes for transfers
+
+`transfers.list(query)` now takes the filters (`recipientId`, `dateFrom`, `dateTo`, `provider`, `status`, `limit`, `cursor`) and returns `{ items, limit, hasMore, nextCursor }`. `Transfer` now has `transferDate`, `receivingCurrency`, `provider` (and optional `purpose`, `notes`), and **amounts and fees are minor-unit strings** as in ADR 0004 (`"25000"` with GBP is 250.00), not decimal major units. The mock and the sample data follow this; the API stub still throws "not connected".
+
 ## Recipients page
 
 `/recipients` (`src/components/recipients`) lists recipients with loading, empty and error
 states, and supports add, edit and delete (with confirmation). Field errors, whether from client
 validation or returned by the data layer, appear next to the field. Pass a `dataSource` prop to
 `RecipientsView` in tests.
+
+## Money and provenance
+
+Amounts follow [ADR 0004](https://github.com/family-pot/family-pot-docs/blob/main/adr/0004-money-representation.md): a **string of whole minor units** plus a currency code (`"15000"` with `GBP` is 150.00). Never use `number` arithmetic on money. `src/lib/money.ts` formats amounts without ever turning them into a float:
+
+```ts
+import { formatMoney } from "@/src/lib/money";
+
+formatMoney("15000", "GBP"); // "£150.00"
+formatMoney("28500", "JPY", "en-US"); // "¥28,500"        (0 decimals)
+formatMoney("3800", "KWD", "en-US"); // "KWD 3.800"      (3 decimals)
+formatMoney("9007199254740993", "JPY", "en-US"); // "¥9,007,199,254,740,993" (exact beyond 2^53)
+```
+
+`formatMoney` throws a `MoneyFormatError` for anything that is not a valid amount or a known currency, rather than showing a wrong number. It passes a decimal _string_ to `Intl.NumberFormat`, which formats it exactly. The default locale is `en-GB`; pass another locale as the third argument. `minorUnitsToDecimal` and `currencyExponent` are exported for lower-level use.
+
+Every displayed number should say where it came from. `ProvenanceBadge` shows one of four values, each with its own text and symbol (never colour alone), a description for screen readers and a tooltip:
+
+```tsx
+import { ProvenanceBadge } from "@/src/components";
+
+<ProvenanceBadge provenance="user-entered" />  {/* ✎ Entered by you */}
+<ProvenanceBadge provenance="calculated" />    {/* = Calculated */}
+<ProvenanceBadge provenance="estimated" />     {/* ≈ Estimated: bold, dashed, with a "not guaranteed" tooltip */}
+<ProvenanceBadge provenance="verified" />      {/* ✓ Verified */}
+```
+
+`estimated` is deliberately heavier so it cannot be mistaken for a fact. Pass children to replace the label (the description is kept).
 
 ## Contributing
 

@@ -62,7 +62,7 @@ describe("MockDataSource recipient rules", () => {
 
   it("rejects deleting a recipient that still has transfers", async () => {
     const ds = source();
-    const transfers = await ds.transfers.list();
+    const { items: transfers } = await ds.transfers.list();
     const withTransfers = transfers[0].recipientId;
     await expect(ds.recipients.delete(withTransfers)).rejects.toBeInstanceOf(
       DeletionRejectedError,

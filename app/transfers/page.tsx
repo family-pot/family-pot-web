@@ -1,18 +1,18 @@
-import { EmptyState } from "@/src/components";
+import { Suspense } from "react";
+import { LoadingState } from "@/src/components";
+import { TransfersView } from "@/src/components/transfers/transfers-view";
 
 export default function TransfersPage() {
+  // useSearchParams (inside the view) needs a Suspense boundary for static rendering.
   return (
-    <section className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6">
-      <h1 className="text-2xl font-semibold tracking-tight">Transfers</h1>
-      <p className="mt-2 text-zinc-600 dark:text-zinc-400">
-        Your transfer history and costs will appear here.
-      </p>
-      <div className="mt-6">
-        <EmptyState
-          title="No transfers yet"
-          description="Once transfers are recorded, their fees and exchange rates will be shown here."
-        />
-      </div>
-    </section>
+    <Suspense
+      fallback={
+        <div className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6">
+          <LoadingState label="Loading transfers…" />
+        </div>
+      }
+    >
+      <TransfersView />
+    </Suspense>
   );
 }

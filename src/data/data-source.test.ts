@@ -16,7 +16,9 @@ describe("MockDataSource", () => {
     const dataSource = source();
 
     expect(await dataSource.recipients.list()).toHaveLength(2);
-    expect(await dataSource.transfers.list()).toHaveLength(2);
+    expect(
+      (await dataSource.transfers.list({ limit: 100 })).items,
+    ).toHaveLength(14);
   });
 
   it("creates, reads, updates and deletes a recipient", async () => {
@@ -50,14 +52,17 @@ describe("MockDataSource", () => {
     const [recipient] = await dataSource.recipients.list();
     const created = await dataSource.transfers.create({
       recipientId: recipient.id,
-      amount: "75.25",
+      transferDate: "2026-08-01",
+      amount: "7525",
       currency: "USD",
+      receivingCurrency: "MXN",
       exchangeRate: "12.3456",
-      fee: "1.25",
+      fee: "125",
+      provider: "Wise",
     });
 
     expect(created.status).toBe("pending");
-    expect(created.amount).toBe("75.25");
+    expect(created.amount).toBe("7525");
     await expect(dataSource.transfers.get(created.id)).resolves.toEqual(
       created,
     );
@@ -94,8 +99,12 @@ describe("MockDataSource", () => {
     await expect(
       dataSource.transfers.create({
         recipientId: "missing",
-        amount: "10.00",
+        transferDate: "2026-08-01",
+        amount: "1000",
         currency: "USD",
+        receivingCurrency: "MXN",
+        exchangeRate: "17",
+        provider: "Wise",
       }),
     ).rejects.toBeInstanceOf(NotFoundError);
   });

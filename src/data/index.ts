@@ -53,9 +53,21 @@ export type {
   Recipient,
   Repository,
   Transfer,
+  TransferListQuery,
+  TransferPage,
+  TransferRepository,
   TransferStatus,
   UpdateRecipientInput,
   UpdateTransferInput,
 } from "./types";
 export { COUNTRY_CODES, countryName, isCountryCode } from "./countries";
 export { validateRecipientInput } from "./recipient-validation";
+export {
+  DEFAULT_PAGE_SIZE,
+  MAX_PAGE_SIZE,
+  isCalendarDate,
+  queryTransfers,
+  validateTransferQuery,
+} from "./transfer-query";
+export { TRANSFER_STATUSES } from "./transfer-status";
+export { sampleTransferCount } from "./sample-data";

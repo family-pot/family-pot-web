@@ -5,16 +5,16 @@ import {
   ValidationError,
 } from "./errors";
 import { validateRecipientInput } from "./recipient-validation";
+import { queryTransfers } from "./transfer-query";
 import { sampleRecipients, sampleTransfers } from "./sample-data";
 import type {
   CreateRecipientInput,
-  CreateTransferInput,
   DataSource,
   Recipient,
   Repository,
+  TransferRepository,
   Transfer,
   UpdateRecipientInput,
-  UpdateTransferInput,
 } from "./types";
 
 export interface MockDataSourceOptions {
@@ -145,14 +145,10 @@ export class MockDataSource implements DataSource {
     },
   };
 
-  readonly transfers: Repository<
-    Transfer,
-    CreateTransferInput,
-    UpdateTransferInput
-  > = {
-    list: async () => {
+  readonly transfers: TransferRepository = {
+    list: async (query) => {
       await this.ready();
-      return this.transferRecords.map(clone);
+      return queryTransfers(this.transferRecords, query);
     },
 
     get: async (id) => {
@@ -178,8 +174,7 @@ export class MockDataSource implements DataSource {
         ...input,
         id: `transfer-${crypto.randomUUID()}`,
         status: input.status ?? "pending",
-        exchangeRate: input.exchangeRate ?? null,
-        fee: input.fee ?? null,
+        fee: input.fee ?? "0",
         createdAt: timestamp,
         updatedAt: timestamp,
       };

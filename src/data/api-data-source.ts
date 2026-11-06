@@ -1,13 +1,11 @@
 import { DataSourceNotConnectedError } from "./errors";
 import type {
   CreateRecipientInput,
-  CreateTransferInput,
   DataSource,
   Recipient,
   Repository,
-  Transfer,
+  TransferRepository,
   UpdateRecipientInput,
-  UpdateTransferInput,
 } from "./types";
 
 function notConnected(method: string): never {
@@ -36,11 +34,7 @@ export class ApiDataSource implements DataSource {
     delete: async () => notConnected("recipients.delete"),
   };
 
-  readonly transfers: Repository<
-    Transfer,
-    CreateTransferInput,
-    UpdateTransferInput
-  > = {
+  readonly transfers: TransferRepository = {
     list: async () => notConnected("transfers.list"),
     get: async () => notConnected("transfers.get"),
     create: async () => notConnected("transfers.create"),
